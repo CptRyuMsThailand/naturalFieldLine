@@ -1,0 +1,109 @@
+<html>
+<head>
+	<title>Natural Fieldline</title>
+	<script src="complex.js"></script>
+	<script src="render.js"></script>
+	
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<fieldset><legend> Color Iterations settings </legend>
+		<form id="formColorInfo" onsubmit="submittedColor(event,this)">
+			<label><input name="colorLog" type="Number" min="1" value="50" required> Color log</label><br>
+			<label><input name="colorOffset" type="range" min="0" max="1" step="0.01">Color Offset </label>
+			<button name="btnSend" type="submit">Update </button>
+		</form>
+	</fieldset>
+	<fieldset ><legend> Color Palette settings </legend>
+		<form id="formPaletteInfo" onsubmit="submittedPalette(event,this)">
+			<table>
+				<tr>
+					<td> Red </td>
+					<td> <input name="color_r_0" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_r_1" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_r_2" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_r_3" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+				</tr>
+				<tr>
+					<td> Green </td>
+					<td> <input name="color_g_0" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_g_1"required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_g_2" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_g_3" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+				</tr>
+				<tr>
+					<td> Blue </td>
+					<td> <input name="color_b_0" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_b_1" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_b_2" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+					<td> <input name="color_b_3" required pattern="[+-]?([0-9]*[.])?[0-9]+"></td>
+				</tr>
+				
+			</table>
+			<button name="btnSend" type="submit">Update </button>
+		</form>
+	</fieldset>
+	<fieldset>
+	<canvas style="background: #005;" id="cv" width="1920" height="1440"></canvas>
+</fieldset>
+	<script id="script_the_loader"></script>
+</body>
+<script >
+function unloadScript(){
+	fractal_render = null;
+	script_the_loader.remove();
+}
+function loadNewScript(){
+	unloadScript();
+	let scr = document.createElement("script");
+	scr.src = "./equation/mandelbrot.js";
+	scr.onload = scriptLoaded;
+	document.body.appendChild(scr);
+
+}
+async function scriptLoaded(){
+	let arrOfAsyncAgent = [];
+	const sampH = 512;
+	const sampW = Math.floor(sampH / H * W);
+	for(let y=0;y<sampW;y++){
+
+		for(let x=0;x<sampH;x++)
+		{
+			arrOfAsyncAgent[x]=( mainRender(ctx,map(y,0,sampW-1,bbox.top,bbox.bottom),map(x,0,sampH-1,bbox.left,bbox.right),W,H,bbox));
+		}
+		await Promise.all(arrOfAsyncAgent);
+	}
+	/*
+	const sampH = 512;
+	const sampW = Math.floor(sampH / H * W);
+	for(let y=0;y<sampW;y++){
+
+		for(let x=0;x<sampH;x++)
+		{
+			ctx.fillRect(
+				map(y,0,sampW-1,0,W)-1,
+				map(x,0,sampH-1,0,H)-1,
+				3,
+				3
+				);
+		}
+		//await Promise.all(arrOfAsyncAgent);
+	}*/
+	
+}
+window.onload = function(){
+	formColorInfo.elements["btnSend"].click();
+	loadNewScript();	
+}
+
+const ctx = cv.getContext("2d");
+ctx.strokeStyle = "#ff0";
+ctx.fillStyle = "#fff";
+const W = cv.width;
+const H = cv.height;
+const bbox = {top : -2 , bottom : 1,left : -1.8,right : 1.8};
+fboLoop();
+</script>
+
+</html>
